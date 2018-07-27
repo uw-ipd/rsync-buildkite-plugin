@@ -1,64 +1,75 @@
-# Artifacts Buildkite Plugin
+# `rsync` Buildkite Plugin
 
-A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for uploading and downloading artifacts.
+A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for
+performing file transfers via
+[`rsync`](https://linux.die.net/man/1/rsync). The plugin invokes `rsync`
+in the `pre` or `post` command phase to provide an artifact-like upload
+and download capacity.
 
-## Uploading artifacts
+## Examples
 
-This functionality duplicates the [artifact_paths]() property in the pipeline yaml files.
+Upload a build product directory into a build-specific output directory on
+a remote store:
 
 ```yml
 steps:
   - plugins:
-      artifacts#v1.2.0:
-        upload: "log/**/*.log"
+      uw-ipd/rsync#v0.1:
+        post: "-Rrv bin remote:/build/${BUILDKITE_BUILD_NUMBER}"
 ```
 
-or
+Upload a glob of files, note that artifact-path extended globbing (eg.
+`path/**/*.log`) is *not* supported:
 
 ```yml
 steps:
   - plugins:
-      artifacts#v1.2.0:
-        upload: [ "log/**/*.log", "debug/*.error" ]
+      uw-ipd/rsync#v0.1:
+        post: "-Rrv log/*/*.log remote:/build/${BUILDKITE_BUILD_NUMBER}"
 ```
 
-## Downloading artifacts
-
-This downloads artifacts matching globs to the local filesystem. See [downloading artifacts](https://buildkite.com/docs/agent/cli-artifact#downloading-artifacts) for more details.
+`${VAR}` is interpolated at pipeline-upload time, not step evaluation
+time. Use `$${VAR}` to perform step-time interpolation of environment
+variables:
 
 ```yml
 steps:
   - plugins:
-      artifacts#v1.2.0:
-        download: "log/**/*.log"
+      uw-ipd/rsync#v0.1:
+        post: "-Rrv bin remote:/build/$${BUILDKITE_JOB_ID}"
 ```
 
-or
+Upload via multiple invocations:
 
 ```yml
 steps:
   - plugins:
-      artifacts#v1.2.0:
-        download: [ "log/**/*.log", "debug/*.error" ]
+      uw-ipd/rsync#v0.1:
+        post:
+         - "-Rrv bin remote:/build/${BUILDKITE_BUILD_NUMBER}"
+         - "-Rrv logs/*/*.txt remote:/build/${BUILDKITE_BUILD_NUMBER}/$${BUILDKITE_JOB_ID}"
+```
+
+Download *before* a command executes via the `pre` step:
+
+```yml
+steps:
+  - plugins:
+      uw-ipd/rsync#v0.1:
+        pre: "-rv remote:/build/ccache ./ccache"
 ```
 
 ## Configuration
 
-### `upload`
+### `pre`
 
-A glob pattern, or array of glob patterns, for files to upload.
+An rsync argument string, or array of rsync argument strings, to be
+executed before `command`.
 
-### `download`
+### `post`
 
-A glob pattern, or array of glob patterns, for files to download.
-
-### `step` (optional)
-
-The job UUID or name to download the artifact from.
-
-### `build` (optional)
-
-The build UUID to download the artifact from.
+An rsync argument string, or array of rsync argument strings, to be
+executed after `command`.
 
 ## License
 
