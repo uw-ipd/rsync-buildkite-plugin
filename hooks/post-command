@@ -28,5 +28,6 @@ echo "--- rsync-ing "
 for path in "${paths[@]}"
   do
     ## `eval` to support step-time varibles in the command
+    echo rsync $path
     eval rsync $path
   done

@@ -59,6 +59,38 @@ steps:
         pre: "-rv remote:/build/ccache ./ccache"
 ```
 
+
+## Ugly Hacks
+
+From `man rsync`, "Rsync is a fast and extraordinarily versatile file
+copying tool [...] it offers a large number of options that control every
+aspect of its behavior and permit very flexible specification."
+
+:trollface:
+
+Rsync does *not* support creation of nested output directories. Create
+a nested output directory via repeated "no-op" copies: 
+
+```
+steps:
+  - plugins:
+      uw-ipd/rsync#v0.1:
+        post:
+          - "-Rrv --exclude=* . remote:/build/artifacts"
+          - "-Rrv --exclude=* . remote:/build/artifacts/${BUILDKITE_BRANCH}"
+          - "-Rrv --exclude=* . remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
+          - "-Rrv bin remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
+```
+
+Create a nested output directory via the "rsync-path trick":
+
+```yml
+steps:
+  - plugins:
+      uw-ipd/rsync#v0.1:
+        post: "--rsync-path="mkdir -p /build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER} && rsync" -Rrv bin remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
+```
+
 ## Configuration
 
 ### `pre`
