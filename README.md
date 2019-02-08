@@ -14,8 +14,8 @@ a remote store:
 ```yml
 steps:
   - plugins:
-      uw-ipd/rsync#v0.1:
-        post: "-Rrv bin remote:/build/${BUILDKITE_BUILD_NUMBER}"
+      - uw-ipd/rsync#v0.1:
+          post: "-Rrv bin remote:/build/${BUILDKITE_BUILD_NUMBER}"
 ```
 
 Upload a glob of files, note that artifact-path extended globbing (eg.
@@ -24,8 +24,8 @@ Upload a glob of files, note that artifact-path extended globbing (eg.
 ```yml
 steps:
   - plugins:
-      uw-ipd/rsync#v0.1:
-        post: "-Rrv log/*/*.log remote:/build/${BUILDKITE_BUILD_NUMBER}"
+      - uw-ipd/rsync#v0.1:
+          post: "-Rrv log/*/*.log remote:/build/${BUILDKITE_BUILD_NUMBER}"
 ```
 
 `${VAR}` is interpolated at pipeline-upload time, not step evaluation
@@ -35,8 +35,8 @@ variables:
 ```yml
 steps:
   - plugins:
-      uw-ipd/rsync#v0.1:
-        post: "-Rrv bin remote:/build/$${BUILDKITE_JOB_ID}"
+      - uw-ipd/rsync#v0.1:
+          post: "-Rrv bin remote:/build/$${BUILDKITE_JOB_ID}"
 ```
 
 Upload via multiple invocations:
@@ -44,10 +44,10 @@ Upload via multiple invocations:
 ```yml
 steps:
   - plugins:
-      uw-ipd/rsync#v0.1:
-        post:
-         - "-Rrv bin remote:/build/${BUILDKITE_BUILD_NUMBER}"
-         - "-Rrv logs/*/*.txt remote:/build/${BUILDKITE_BUILD_NUMBER}/$${BUILDKITE_JOB_ID}"
+      - uw-ipd/rsync#v0.1:
+          post:
+           - "-Rrv bin remote:/build/${BUILDKITE_BUILD_NUMBER}"
+           - "-Rrv logs/*/*.txt remote:/build/${BUILDKITE_BUILD_NUMBER}/$${BUILDKITE_JOB_ID}"
 ```
 
 Download *before* a command executes via the `pre` step:
@@ -55,8 +55,8 @@ Download *before* a command executes via the `pre` step:
 ```yml
 steps:
   - plugins:
-      uw-ipd/rsync#v0.1:
-        pre: "-rv remote:/build/ccache ./ccache"
+      - uw-ipd/rsync#v0.1:
+          pre: "-rv remote:/build/ccache ./ccache"
 ```
 
 
@@ -71,15 +71,15 @@ aspect of its behavior and permit very flexible specification."
 Rsync does *not* support creation of nested output directories. Create
 a nested output directory via repeated "no-op" copies: 
 
-```
+```yml
 steps:
   - plugins:
-      uw-ipd/rsync#v0.1:
-        post:
-          - "-Rrv --exclude=* . remote:/build/artifacts"
-          - "-Rrv --exclude=* . remote:/build/artifacts/${BUILDKITE_BRANCH}"
-          - "-Rrv --exclude=* . remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
-          - "-Rrv bin remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
+      - uw-ipd/rsync#v0.1:
+          post:
+            - "-Rrv --exclude=* . remote:/build/artifacts"
+            - "-Rrv --exclude=* . remote:/build/artifacts/${BUILDKITE_BRANCH}"
+            - "-Rrv --exclude=* . remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
+            - "-Rrv bin remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
 ```
 
 Create a nested output directory via the "rsync-path trick":
@@ -87,8 +87,8 @@ Create a nested output directory via the "rsync-path trick":
 ```yml
 steps:
   - plugins:
-      uw-ipd/rsync#v0.1:
-        post: "--rsync-path="mkdir -p /build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER} && rsync" -Rrv bin remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
+      - uw-ipd/rsync#v0.1:
+          post: "--rsync-path="mkdir -p /build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER} && rsync" -Rrv bin remote:/build/artifacts/${BUILDKITE_BRANCH}/${BUILDKITE_BUILD_NUMBER}"
 ```
 
 ## Configuration
