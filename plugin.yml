@@ -1,7 +1,8 @@
-name: Artifacts
-description: Upload and download artifacts
-author: https://github.com/buildkite
-requirements: []
+name: rsync
+description: Use rsync to download files before steps, and upload files afterwards
+author: https://github.com/uw-ipd
+requirements:
+  - rsync
 configuration:
   properties:
     upload:
